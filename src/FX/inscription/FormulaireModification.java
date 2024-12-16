@@ -1,5 +1,6 @@
 package FX.inscription;
 
+import activite.Activite;
 import club.Club;
 import inscription.InscriptionController;
 import javafx.scene.Scene;
@@ -9,13 +10,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import personne.Personne;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FormulaireModification {
     public static Stage afficher(Stage parentStage, InscriptionController controller) {
         // Vérifiez que le contrôleur est valide
-
-        // Création de la fenêtre
         Stage stage = new Stage();
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(parentStage);
@@ -26,27 +26,13 @@ public class FormulaireModification {
         if (eleves.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Aucun élève à modifier.");
             alert.showAndWait();
+            return null;
         }
 
-        // Liste déroulante pour sélectionner un élève
+        // Sélection de l'élève
         ComboBox<Personne> comboBox = new ComboBox<>();
         comboBox.getItems().addAll(eleves);
         comboBox.setPromptText("Sélectionnez un élève");
-
-        comboBox.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(Personne personne, boolean empty) {
-                super.updateItem(personne, empty);
-                setText(empty || personne == null ? null : personne.getNom());
-            }
-        });
-        comboBox.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(Personne personne, boolean empty) {
-                super.updateItem(personne, empty);
-                setText(empty || personne == null ? null : personne.getNom());
-            }
-        });
 
         // Champs de modification
         TextField txtNom = new TextField();
@@ -55,34 +41,71 @@ public class FormulaireModification {
         TextField txtPrenom = new TextField();
         txtPrenom.setPromptText("Prénom");
 
-        TextField txtClub = new TextField();
-        txtClub.setPromptText("Club");
-
         ComboBox<String> comboClubs = new ComboBox<>();
         comboClubs.getItems().addAll(controller.getClubs().stream()
                 .map(Club::getClubName).toList());
         comboClubs.setPromptText("Choisir un club");
 
-        Button btnAjouterClub = new Button("Ajouter un nouveau club");
-        btnAjouterClub.setOnAction(event -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Ajouter un Club");
-            dialog.setHeaderText("Nouveau club");
-            dialog.setContentText("Nom du club :");
-            dialog.showAndWait().ifPresent(nomClub -> {
-                if (controller.getClubs().stream().noneMatch(club -> club.getClubName().equalsIgnoreCase(nomClub))) {
-                    controller.ajouterClub(nomClub);
-                    comboClubs.getItems().add(nomClub);
-                } else {
-                    new Alert(Alert.AlertType.INFORMATION, "Le club existe déjà.").showAndWait();
-                }
-            });
-        });
-
         TextField txtEmail = new TextField();
         txtEmail.setPromptText("Email");
 
         CheckBox chkPaiement = new CheckBox("Paiement en cours");
+
+        // Gestion des activités
+        ListView<Activite> listActivites = new ListView<>();
+        listActivites.setPrefHeight(150);
+
+        TextField txtDureeActivite = new TextField();
+        txtDureeActivite.setPromptText("Durée de l'activité en heures");
+
+        CheckBox chkLogementActivite = new CheckBox("Logement requis");
+        CheckBox chkRepasActivite = new CheckBox("Repas inclus");
+        CheckBox chkWeekendActivite = new CheckBox("Activité en weekend");
+
+        ComboBox<String> comboActivites = new ComboBox<>();
+        comboActivites.getItems().addAll(controller.getNomsActivites());
+        comboActivites.setPromptText("Choisir une activité");
+
+        // Ajouter une nouvelle activité
+        Button btnAjouterActivite = new Button("Ajouter une activité");
+        btnAjouterActivite.setOnAction(event -> {
+            String nomActivite = comboActivites.getValue();
+            if (nomActivite == null || txtDureeActivite.getText().isEmpty()) {
+                new Alert(Alert.AlertType.ERROR, "Veuillez sélectionner une activité et renseigner tous les détails.").showAndWait();
+                return;
+            }
+            try {
+                int duree = Integer.parseInt(txtDureeActivite.getText());
+                Activite nouvelleActivite = new Activite(
+                        nomActivite,
+                        duree,
+                        chkLogementActivite.isSelected(),
+                        chkRepasActivite.isSelected(),
+                        chkWeekendActivite.isSelected()
+                );
+                listActivites.getItems().add(nouvelleActivite);
+
+                // Réinitialiser les champs
+                comboActivites.setValue(null);
+                txtDureeActivite.clear();
+                chkLogementActivite.setSelected(false);
+                chkRepasActivite.setSelected(false);
+                chkWeekendActivite.setSelected(false);
+            } catch (NumberFormatException ex) {
+                new Alert(Alert.AlertType.ERROR, "Veuillez entrer une durée valide.").showAndWait();
+            }
+        });
+
+        // Supprimer une activité
+        Button btnSupprimerActivite = new Button("Supprimer l'activité sélectionnée");
+        btnSupprimerActivite.setOnAction(event -> {
+            Activite activiteSelectionnee = listActivites.getSelectionModel().getSelectedItem();
+            if (activiteSelectionnee != null) {
+                listActivites.getItems().remove(activiteSelectionnee);
+            } else {
+                new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une activité à supprimer.").showAndWait();
+            }
+        });
 
         // Pré-remplir les champs lorsqu'un élève est sélectionné
         comboBox.setOnAction(event -> {
@@ -90,37 +113,35 @@ public class FormulaireModification {
             if (eleveSelectionne != null) {
                 txtNom.setText(eleveSelectionne.getNom());
                 txtPrenom.setText(eleveSelectionne.getPrenom());
-                txtClub.setText(eleveSelectionne.getClub());
+                comboClubs.setValue(eleveSelectionne.getClub());
                 txtEmail.setText(eleveSelectionne.getMail());
                 chkPaiement.setSelected(eleveSelectionne.isPayemmentEnCours());
+
+                listActivites.getItems().setAll(eleveSelectionne.getActivites());
             }
         });
 
-        // Bouton de soumission
+        // Bouton de validation
         Button btnSubmit = new Button("Modifier");
         btnSubmit.setOnAction(event -> {
             Personne eleveSelectionne = comboBox.getValue();
             if (eleveSelectionne == null) {
-                Alert alert = new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner un élève à modifier.");
-                alert.showAndWait();
+                new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner un élève.").showAndWait();
                 return;
             }
-
-            // Mise à jour des informations de l'élève
+            // Mise à jour des informations
             eleveSelectionne.setNom(txtNom.getText());
             eleveSelectionne.setPrenom(txtPrenom.getText());
-            eleveSelectionne.setClub(txtClub.getText());
             eleveSelectionne.setClub(comboClubs.getValue());
             eleveSelectionne.setMail(txtEmail.getText());
             eleveSelectionne.setPayemmentEnCours(chkPaiement.isSelected());
 
+            // Mettre à jour les activités
+            eleveSelectionne.setActivites(new ArrayList<>(listActivites.getItems()));
+
             // Sauvegarde via le contrôleur
             controller.model.sauvegarder();
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Élève modifié avec succès !");
-            alert.showAndWait();
-
-            // Fermer la fenêtre
+            new Alert(Alert.AlertType.INFORMATION, "Élève modifié avec succès !").showAndWait();
             stage.close();
         });
 
@@ -129,18 +150,14 @@ public class FormulaireModification {
         root.getChildren().addAll(
                 new Label("Modifier une inscription"),
                 comboBox,
-                txtNom,
-                txtPrenom,
-                txtClub,
-                comboClubs,
-                btnAjouterClub,
-                txtEmail,
-                chkPaiement,
-                btnSubmit
+                txtNom, txtPrenom, comboClubs, txtEmail, chkPaiement,
+                new Label("Activités associées :"), listActivites,
+                new Label("Ajouter une activité :"), comboActivites, txtDureeActivite,
+                chkLogementActivite, chkRepasActivite, chkWeekendActivite,
+                btnAjouterActivite, btnSupprimerActivite, btnSubmit
         );
 
-        // Configuration de la scène
-        Scene scene = new Scene(root, 300, 400);
+        Scene scene = new Scene(root, 500, 600);
         stage.setScene(scene);
         stage.show();
         return stage;
