@@ -1,0 +1,17 @@
+kinomichi
+  x 1.liste inscription (si le meme possible changement ou ajout->(unique & non null->(nom / prenom)) /pas obligatoir -> (club ->(affichage + possible ajout) / mail)) + crud ->(confirmation modification et supp)
+
+   v2.liste activité (differente activité par personne) -> h de stage
+                                                       -> logement / souper
+                                                       -> horaire (weekend -> logement/souper)
+
+   3.tarifs -> instructeur (souper / logement)
+            -> participant
+            -> creation de tarif (par nbActivité)
+
+
+   4.payment -> possiblité payer en plusieur fois
+
+   x 5.desincription 
+      
+      
