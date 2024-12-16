@@ -77,7 +77,7 @@ public class LogicLayout {
     }
 
     private void ouvrirFormulaireAjoutActivite(Stage parentStage) {
-        Stage formulaireStage = FormulaireAjoutActivite.afficher(parentStage, controller);
+        Stage formulaireStage = FormulaireAjoutActivite.afficher(parentStage, activiteController);
         formulaireStage.setOnHidden(event -> {
             controller.model.charger();
             mettreAJourTable();

@@ -2,10 +2,12 @@ package activite;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ActiviteController {
-    private final List<Activite> activites = new ArrayList<>();
+    private List<Activite> activites = new ArrayList<>();
+    private List<String> nomsActivites = new ArrayList<>();
 
     public final Activite model;
     public final ActiviteView view;
@@ -13,14 +15,12 @@ public class ActiviteController {
     public ActiviteController(Activite model, ActiviteView view) {
         this.model = model;
         this.view = view;
+        this.model.charger();
+        nomsActivites.addAll(activites.stream().map(Activite::getNom).toList());
     }
 
     public ActiviteView getActiviteView() {
         return view;
-    }
-
-    public void ajouterActivite(Activite activite) {
-        activites.add(activite);
     }
 
     public List<Activite> listerActivites() {
@@ -53,42 +53,17 @@ public class ActiviteController {
         return false;
     }
 
-    public void demarrer() {
-        int choix;
-        do {
-            view.afficherMenuActivites();
-            choix = view.lireChoix();
+    public void ajouterNomActivite(String nom) {
+        if (!nomsActivites.contains(nom)) {
+            nomsActivites.add(nom);
+            model.sauvegarder();
+            System.out.println("Nom d'activité ajouté : " + nom);
+        } else {
+            System.out.println("Cette activité existe déjà");
+        }
+    }
 
-            switch (choix) {
-                case 1 -> {
-                    Activite nouvelleActivite = view.lireNouvelleActivite();
-                    ajouterActivite(nouvelleActivite);
-                    view.afficherMessage("Activité ajoutée avec succès.");
-                }
-                case 2 -> {
-                    List<Activite> activites = listerActivites();
-                    view.afficherActivites(activites);
-                }
-                case 3 -> {
-                    String nom = view.lireTexte("Nom de l'activité à modifier : ");
-                    Activite nouvelleActivite = view.lireNouvelleActivite();
-                    if (modifierActivite(nom, nouvelleActivite)) {
-                        view.afficherMessage("Activité modifiée avec succès.");
-                    } else {
-                        view.afficherMessage("Activité non trouvée.");
-                    }
-                }
-                case 4 -> {
-                    String nom = view.lireTexte("Nom de l'activité à supprimer : ");
-                    if (supprimerActivite(nom)) {
-                        view.afficherMessage("Activité supprimée avec succès.");
-                    } else {
-                        view.afficherMessage("Activité non trouvée.");
-                    }
-                }
-                case 0 -> view.afficherMessage("Retour au menu principal.");
-                default -> view.afficherMessage("Choix invalide. Réessayez.");
-            }
-        } while (choix != 0);
+    public List<String> getNomsActivites() {
+        return nomsActivites;
     }
 }

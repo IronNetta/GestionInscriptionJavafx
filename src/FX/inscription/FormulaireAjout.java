@@ -1,5 +1,7 @@
+// FormulaireAjout.java
 package FX.inscription;
 
+import FX.activite.FormulaireAjoutActivite;
 import activite.Activite;
 import club.Club;
 import inscription.InscriptionController;
@@ -9,6 +11,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import personne.Personne;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FormulaireAjout {
 
@@ -52,15 +57,15 @@ public class FormulaireAjout {
 
         CheckBox chkPaiement = new CheckBox("Paiement en cours");
 
-        // Liste déroulante pour sélectionner des activités
+        // Liste déroulante pour sélectionner des activités avec récupération dynamique des noms
         ComboBox<String> comboActivites = new ComboBox<>();
-        comboActivites.getItems().addAll(controller.getActivites().stream()
-                .map(Activite::getNom).toList());
+        comboActivites.getItems().addAll(controller.getNomsActivites());
         comboActivites.setPromptText("Choisir une activité");
 
         // Zone pour configurer les détails spécifiques à une activité
         TextField txtDureeActivite = new TextField();
         txtDureeActivite.setPromptText("Durée de l'activité en heures");
+
         CheckBox chkLogementActivite = new CheckBox("Logement requis pour l'activité");
         CheckBox chkRepasActivite = new CheckBox("Repas du soir inclus pour l'activité");
         CheckBox chkWeekendActivite = new CheckBox("Activité en weekend");
@@ -68,21 +73,36 @@ public class FormulaireAjout {
         // Liste des activités ajoutées pour cette inscription
         ListView<Activite> listActivitesAjoutees = new ListView<>();
 
+        // Liste pour stocker les activités
+        List<Activite> activitesSelectionnees = new ArrayList<>();
+
         Button btnAjouterActivite = new Button("Ajouter cette activité");
         btnAjouterActivite.setOnAction(event -> {
             String nomActivite = comboActivites.getValue();
+
             if (nomActivite == null || txtDureeActivite.getText().isEmpty()) {
                 new Alert(Alert.AlertType.ERROR, "Veuillez sélectionner une activité et renseigner tous les détails.").showAndWait();
                 return;
             }
+
             try {
                 int duree = Integer.parseInt(txtDureeActivite.getText());
                 boolean logement = chkLogementActivite.isSelected();
                 boolean repas = chkRepasActivite.isSelected();
                 boolean weekend = chkWeekendActivite.isSelected();
 
-                Activite activite = new Activite(nomActivite, duree, logement, repas, weekend);
-                listActivitesAjoutees.getItems().add(activite);
+                // Créer l'activité avec les détails
+                Activite nouvelleActivite = new Activite(
+                        nomActivite,
+                        duree,
+                        logement,
+                        repas,
+                        weekend
+                );
+
+                // Ajouter à la liste des activités
+                activitesSelectionnees.add(nouvelleActivite);
+                listActivitesAjoutees.getItems().add(nouvelleActivite);
 
                 // Réinitialiser les champs
                 comboActivites.setValue(null);
@@ -90,6 +110,7 @@ public class FormulaireAjout {
                 chkLogementActivite.setSelected(false);
                 chkRepasActivite.setSelected(false);
                 chkWeekendActivite.setSelected(false);
+
             } catch (NumberFormatException ex) {
                 new Alert(Alert.AlertType.ERROR, "Veuillez entrer une durée valide.").showAndWait();
             }
@@ -110,7 +131,7 @@ public class FormulaireAjout {
                 Personne nouvelEleve = new Personne(nom, prenom, club, email, paiement);
 
                 // Ajouter toutes les activités configurées
-                listActivitesAjoutees.getItems().forEach(nouvelEleve::ajouterActivite);
+                activitesSelectionnees.forEach(nouvelEleve::ajouterActivite);
 
                 controller.ajouterEleve(nouvelEleve);
 
@@ -125,9 +146,10 @@ public class FormulaireAjout {
         root.getChildren().addAll(
                 new Label("Ajouter une inscription"),
                 txtNom, txtPrenom, comboClubs, btnAjouterClub, txtEmail, chkPaiement,
-                new Label("Activité :"), comboActivites, txtDureeActivite, chkLogementActivite, chkRepasActivite, chkWeekendActivite,
-                btnAjouterActivite, new Label("Activités ajoutées :"), listActivitesAjoutees,
-                btnSubmit
+                new Label("Activité :"), comboActivites, txtDureeActivite,
+                chkLogementActivite, chkRepasActivite, chkWeekendActivite,
+                btnAjouterActivite, new Label("Activités ajoutées :"),
+                listActivitesAjoutees, btnSubmit
         );
 
         // Configuration de la scène
@@ -137,4 +159,3 @@ public class FormulaireAjout {
         return stage;
     }
 }
-

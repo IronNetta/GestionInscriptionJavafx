@@ -45,6 +45,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         model.charger();
+        activiteModel.charger();
 
         Image logo = new Image(Objects.requireNonNull(getClass().getResourceAsStream("Kinomichi_Logo.gif")));
         primaryStage.getIcons().add(logo);

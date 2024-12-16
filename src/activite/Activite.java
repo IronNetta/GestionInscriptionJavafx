@@ -4,11 +4,12 @@ import club.Club;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Activite implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final String FILE_NAME = "Avtivité.json";
+    private static final String FILE_NAME = "NomActivites.json";
     private List<Activite> activites = new ArrayList<>();
 
     private String nom;
@@ -57,24 +58,34 @@ public class Activite implements Serializable {
                 '}';
     }
 
+    private List<String> nomsActivites = new ArrayList<>();
+
     public void sauvegarder() {
+        if (nomsActivites == null || nomsActivites.isEmpty()) {
+            System.out.println("Aucun nom d'activité à sauvegarder.");
+            return;
+        }
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
-            oos.writeObject(activites);
+            oos.writeObject(nomsActivites);
             oos.flush();
+            System.out.println("Noms d'activités sauvegardés : " + nomsActivites);
         } catch (IOException e) {
-            System.out.println("Erreur lors de la sauvegarde des clubs : " + e.getMessage());
+            System.err.println("Erreur lors de la sauvegarde des noms d'activités : " + e.getMessage());
         }
     }
 
     @SuppressWarnings("unchecked")
     public void charger() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
-            activites = (ArrayList<Activite>) ois.readObject();
+            nomsActivites = (List<String>) ois.readObject();
+            System.out.println("Noms d'activités chargés : " + nomsActivites);
+        } catch (FileNotFoundException e) {
+            System.out.println("Aucun fichier trouvé. Une nouvelle liste sera créée.");
+            nomsActivites = new ArrayList<>(Arrays.asList("Activité 1", "Activité 2", "Activité 3"));
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Aucune donnée de clubs existante. Nouvelle liste créée.");
-            activites.addAll(List.of(Activite.dataTest()));
+            System.err.println("Erreur lors du chargement des noms d'activités : " + e.getMessage());
         }
-}
+    }
 
     private static Activite[] dataTest() {
         Activite[] activites = new Activite[3];
