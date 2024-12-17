@@ -1,6 +1,5 @@
 package inscription;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import activite.Activite;
@@ -12,12 +11,14 @@ import personne.Personne;
 public class InscriptionController {
     public final Inscription model;
     public final InscriptionView view;
+    public final Activite activiteModel;
     private final ActiviteController activiteController;
     private final ClubManager clubManager;
 
-    public InscriptionController(Inscription model, InscriptionView view, ActiviteController activiteController) {
+    public InscriptionController(Inscription model, InscriptionView view, Activite activiteModel, ActiviteController activiteController) {
         this.model = model;
         this.view = view;
+        this.activiteModel = activiteModel;
         this.activiteController = activiteController;
         this.clubManager = new ClubManager();
     }
@@ -45,6 +46,6 @@ public class InscriptionController {
     }
 
     public List<String> getNomsActivites() {
-        return activiteController.getNomsActivites();
+        return activiteModel.getActivites().stream().map(Activite::getNom).toList();
     }
 }

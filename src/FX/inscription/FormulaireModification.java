@@ -55,6 +55,29 @@ public class FormulaireModification {
         ListView<Activite> listActivites = new ListView<>();
         listActivites.setPrefHeight(150);
 
+        List<Activite> activites = controller.activiteModel.getActivites();
+        if (activites.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Aucune activité à modifier.");
+            alert.showAndWait();
+            return null;
+        }
+
+        ComboBox<Activite> comboActivites = new ComboBox<>();
+        comboActivites.getItems().addAll(controller.activiteModel.getActivites());
+        comboActivites.setPromptText("Choisir une activité");
+
+        comboActivites.setCellFactory(lv -> new ListCell<Activite>() {
+            @Override
+            protected void updateItem(Activite item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                } else {
+                    setText(item.getNom());
+                }
+            }
+        });
+
         TextField txtDureeActivite = new TextField();
         txtDureeActivite.setPromptText("Durée de l'activité en heures");
 
@@ -62,14 +85,10 @@ public class FormulaireModification {
         CheckBox chkRepasActivite = new CheckBox("Repas inclus");
         CheckBox chkWeekendActivite = new CheckBox("Activité en weekend");
 
-        ComboBox<String> comboActivites = new ComboBox<>();
-        comboActivites.getItems().addAll(controller.getNomsActivites());
-        comboActivites.setPromptText("Choisir une activité");
-
         // Ajouter une nouvelle activité
         Button btnAjouterActivite = new Button("Ajouter une activité");
         btnAjouterActivite.setOnAction(event -> {
-            String nomActivite = comboActivites.getValue();
+            String nomActivite = String.valueOf(comboActivites.getValue());
             if (nomActivite == null || txtDureeActivite.getText().isEmpty()) {
                 new Alert(Alert.AlertType.ERROR, "Veuillez sélectionner une activité et renseigner tous les détails.").showAndWait();
                 return;
@@ -119,6 +138,17 @@ public class FormulaireModification {
 
                 listActivites.getItems().setAll(eleveSelectionne.getActivites());
             }
+        });
+
+        comboActivites.setOnAction(event -> {
+                Activite activiteSelection = comboActivites.getValue();
+        if (activiteSelection != null ) {
+            txtDureeActivite.setText(activiteSelection.getNom());
+            chkLogementActivite.setSelected(activiteSelection.isLogement());
+            chkRepasActivite.setSelected(activiteSelection.isRepasSoir());
+            chkWeekendActivite.setSelected(activiteSelection.isEstWeekend());
+        }
+
         });
 
         // Bouton de validation

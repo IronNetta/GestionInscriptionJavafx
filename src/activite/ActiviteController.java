@@ -6,8 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ActiviteController {
-    private List<Activite> activites = new ArrayList<>();
-    private List<String> nomsActivites = new ArrayList<>();
+    private final List<Activite> activites = new ArrayList<>();
 
     public final Activite model;
     public final ActiviteView view;
@@ -16,7 +15,6 @@ public class ActiviteController {
         this.model = model;
         this.view = view;
         this.model.charger();
-        nomsActivites.addAll(activites.stream().map(Activite::getNom).toList());
     }
 
     public ActiviteView getActiviteView() {
@@ -53,17 +51,13 @@ public class ActiviteController {
         return false;
     }
 
-    public void ajouterNomActivite(String nom) {
-        if (!nomsActivites.contains(nom)) {
-            nomsActivites.add(nom);
-            model.sauvegarder();
-            System.out.println("Nom d'activité ajouté : " + nom);
-        } else {
-            System.out.println("Cette activité existe déjà");
-        }
+    public void ajouterActivite(Activite activite) {
+            model.ajouterActivite(activite);
+            view.afficherMessage("activité ajouté avec succès.");
+
     }
 
-    public List<String> getNomsActivites() {
-        return nomsActivites;
+    public List<Activite> getActivites() {
+        return activites;
     }
 }

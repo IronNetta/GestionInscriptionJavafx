@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Activite implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final String FILE_NAME = "NomActivites.json";
-    private List<Activite> activites = new ArrayList<>();
+    private static final String FILE_NAME = "Activites.json";
+    private ArrayList<Activite> activites = new ArrayList<>();
 
     private String nom;
     private int heuresStage;
@@ -58,17 +58,24 @@ public class Activite implements Serializable {
                 '}';
     }
 
-    private List<String> nomsActivites = new ArrayList<>();
+    public void ajouterActivite(Activite activite){
+        activites.add(activite);
+        sauvegarder();
+    }
+
+    public List<Activite> getActivites() {
+        return new ArrayList<>(activites);
+    }
 
     public void sauvegarder() {
-        if (nomsActivites == null || nomsActivites.isEmpty()) {
-            System.out.println("Aucun nom d'activité à sauvegarder.");
+        if (activites == null || activites.isEmpty()) {
+            System.out.println("Aucune d'activité à sauvegarder.");
             return;
         }
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
-            oos.writeObject(nomsActivites);
+            oos.writeObject(activites);
             oos.flush();
-            System.out.println("Noms d'activités sauvegardés : " + nomsActivites);
+            System.out.println("Noms d'activités sauvegardés : " + activites);
         } catch (IOException e) {
             System.err.println("Erreur lors de la sauvegarde des noms d'activités : " + e.getMessage());
         }
@@ -77,11 +84,10 @@ public class Activite implements Serializable {
     @SuppressWarnings("unchecked")
     public void charger() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
-            nomsActivites = (List<String>) ois.readObject();
-            System.out.println("Noms d'activités chargés : " + nomsActivites);
+            activites = (ArrayList<Activite>) ois.readObject();
+            System.out.println("Noms d'activités chargés : " + activites);
         } catch (FileNotFoundException e) {
             System.out.println("Aucun fichier trouvé. Une nouvelle liste sera créée.");
-            nomsActivites = new ArrayList<>(Arrays.asList("Activité 1", "Activité 2", "Activité 3"));
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Erreur lors du chargement des noms d'activités : " + e.getMessage());
         }

@@ -57,65 +57,6 @@ public class FormulaireAjout {
 
         CheckBox chkPaiement = new CheckBox("Paiement en cours");
 
-        // Liste déroulante pour sélectionner des activités avec récupération dynamique des noms
-        ComboBox<String> comboActivites = new ComboBox<>();
-        comboActivites.getItems().addAll(controller.getNomsActivites());
-        comboActivites.setPromptText("Choisir une activité");
-
-        // Zone pour configurer les détails spécifiques à une activité
-        TextField txtDureeActivite = new TextField();
-        txtDureeActivite.setPromptText("Durée de l'activité en heures");
-
-        CheckBox chkLogementActivite = new CheckBox("Logement requis pour l'activité");
-        CheckBox chkRepasActivite = new CheckBox("Repas du soir inclus pour l'activité");
-        CheckBox chkWeekendActivite = new CheckBox("Activité en weekend");
-
-        // Liste des activités ajoutées pour cette inscription
-        ListView<Activite> listActivitesAjoutees = new ListView<>();
-
-        // Liste pour stocker les activités
-        List<Activite> activitesSelectionnees = new ArrayList<>();
-
-        Button btnAjouterActivite = new Button("Ajouter cette activité");
-        btnAjouterActivite.setOnAction(event -> {
-            String nomActivite = comboActivites.getValue();
-
-            if (nomActivite == null || txtDureeActivite.getText().isEmpty()) {
-                new Alert(Alert.AlertType.ERROR, "Veuillez sélectionner une activité et renseigner tous les détails.").showAndWait();
-                return;
-            }
-
-            try {
-                int duree = Integer.parseInt(txtDureeActivite.getText());
-                boolean logement = chkLogementActivite.isSelected();
-                boolean repas = chkRepasActivite.isSelected();
-                boolean weekend = chkWeekendActivite.isSelected();
-
-                // Créer l'activité avec les détails
-                Activite nouvelleActivite = new Activite(
-                        nomActivite,
-                        duree,
-                        logement,
-                        repas,
-                        weekend
-                );
-
-                // Ajouter à la liste des activités
-                activitesSelectionnees.add(nouvelleActivite);
-                listActivitesAjoutees.getItems().add(nouvelleActivite);
-
-                // Réinitialiser les champs
-                comboActivites.setValue(null);
-                txtDureeActivite.clear();
-                chkLogementActivite.setSelected(false);
-                chkRepasActivite.setSelected(false);
-                chkWeekendActivite.setSelected(false);
-
-            } catch (NumberFormatException ex) {
-                new Alert(Alert.AlertType.ERROR, "Veuillez entrer une durée valide.").showAndWait();
-            }
-        });
-
         // Bouton de soumission
         Button btnSubmit = new Button("Ajouter");
         btnSubmit.setOnAction(event -> {
@@ -130,9 +71,6 @@ public class FormulaireAjout {
             } else {
                 Personne nouvelEleve = new Personne(nom, prenom, club, email, paiement);
 
-                // Ajouter toutes les activités configurées
-                activitesSelectionnees.forEach(nouvelEleve::ajouterActivite);
-
                 controller.ajouterEleve(nouvelEleve);
 
                 new Alert(Alert.AlertType.INFORMATION, "Élève ajouté avec succès !").showAndWait();
@@ -145,15 +83,11 @@ public class FormulaireAjout {
         VBox root = new VBox(10);
         root.getChildren().addAll(
                 new Label("Ajouter une inscription"),
-                txtNom, txtPrenom, comboClubs, btnAjouterClub, txtEmail, chkPaiement,
-                new Label("Activité :"), comboActivites, txtDureeActivite,
-                chkLogementActivite, chkRepasActivite, chkWeekendActivite,
-                btnAjouterActivite, new Label("Activités ajoutées :"),
-                listActivitesAjoutees, btnSubmit
+                txtNom, txtPrenom, comboClubs, btnAjouterClub, txtEmail, chkPaiement
         );
 
         // Configuration de la scène
-        Scene scene = new Scene(root, 500, 600);
+        Scene scene = new Scene(root, 500, 300);
         stage.setScene(scene);
         stage.show();
         return stage;

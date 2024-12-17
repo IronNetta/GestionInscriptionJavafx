@@ -37,7 +37,7 @@ public class Main extends Application {
     ActiviteView activiteView = new ActiviteView();
     Activite activiteModel = new Activite();
     ActiviteController activiteController = new ActiviteController(activiteModel, activiteView);
-    InscriptionController controller = new InscriptionController(model, view, activiteController);
+    InscriptionController controller = new InscriptionController(model, view,activiteModel, activiteController);
 
     LayoutManager layoutManager = new LayoutManager();
     LogicLayout logicLayout = new LogicLayout(controller,activiteController,layoutManager);
